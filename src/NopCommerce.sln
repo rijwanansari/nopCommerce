@@ -411,7 +411,4 @@ Global
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {EE72A8B2-332A-4175-9319-6726D36E9D25}
 	EndGlobalSection
-	GlobalSection(NDepend) = preSolution
-		Project = ".\NopCommerce.ndproj"
-	EndGlobalSection
 EndGlobal
