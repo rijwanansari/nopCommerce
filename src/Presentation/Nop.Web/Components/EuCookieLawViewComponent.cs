@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Nop.Core;
 using Nop.Core.Domain;
 using Nop.Core.Domain.Customers;
@@ -10,12 +8,12 @@ using Nop.Web.Framework.Components;
 
 namespace Nop.Web.Components
 {
-    public class EuCookieLawViewComponent : NopViewComponent
+    public partial class EuCookieLawViewComponent : NopViewComponent
     {
-        private readonly IGenericAttributeService _genericAttributeService;
-        private readonly IStoreContext _storeContext;
-        private readonly IWorkContext _workContext;
-        private readonly StoreInformationSettings _storeInformationSettings;
+        protected readonly IGenericAttributeService _genericAttributeService;
+        protected readonly IStoreContext _storeContext;
+        protected readonly IWorkContext _workContext;
+        protected readonly StoreInformationSettings _storeInformationSettings;
 
         public EuCookieLawViewComponent(IGenericAttributeService genericAttributeService,
             IStoreContext storeContext,

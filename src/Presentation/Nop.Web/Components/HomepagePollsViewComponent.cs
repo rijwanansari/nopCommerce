@@ -1,14 +1,12 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Nop.Web.Factories;
 using Nop.Web.Framework.Components;
 
 namespace Nop.Web.Components
 {
-    public class HomepagePollsViewComponent : NopViewComponent
+    public partial class HomepagePollsViewComponent : NopViewComponent
     {
-        private readonly IPollModelFactory _pollModelFactory;
+        protected readonly IPollModelFactory _pollModelFactory;
 
         public HomepagePollsViewComponent(IPollModelFactory pollModelFactory)
         {

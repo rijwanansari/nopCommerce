@@ -1,14 +1,12 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Nop.Web.Factories;
 using Nop.Web.Framework.Components;
 
 namespace Nop.Web.Components
 {
-    public class HomepageCategoriesViewComponent : NopViewComponent
+    public partial class HomepageCategoriesViewComponent : NopViewComponent
     {
-        private readonly ICatalogModelFactory _catalogModelFactory;
+        protected readonly ICatalogModelFactory _catalogModelFactory;
 
         public HomepageCategoriesViewComponent(ICatalogModelFactory catalogModelFactory)
         {

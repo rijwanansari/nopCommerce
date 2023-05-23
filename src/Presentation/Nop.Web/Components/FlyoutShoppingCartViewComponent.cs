@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Nop.Core.Domain.Orders;
 using Nop.Services.Security;
 using Nop.Web.Factories;
@@ -7,11 +6,11 @@ using Nop.Web.Framework.Components;
 
 namespace Nop.Web.Components
 {
-    public class FlyoutShoppingCartViewComponent : NopViewComponent
+    public partial class FlyoutShoppingCartViewComponent : NopViewComponent
     {
-        private readonly IPermissionService _permissionService;
-        private readonly IShoppingCartModelFactory _shoppingCartModelFactory;
-        private readonly ShoppingCartSettings _shoppingCartSettings;
+        protected readonly IPermissionService _permissionService;
+        protected readonly IShoppingCartModelFactory _shoppingCartModelFactory;
+        protected readonly ShoppingCartSettings _shoppingCartSettings;
 
         public FlyoutShoppingCartViewComponent(IPermissionService permissionService,
             IShoppingCartModelFactory shoppingCartModelFactory,

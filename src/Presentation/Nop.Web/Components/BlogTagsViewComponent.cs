@@ -1,15 +1,14 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Nop.Core.Domain.Blogs;
 using Nop.Web.Factories;
 using Nop.Web.Framework.Components;
 
 namespace Nop.Web.Components
 {
-    public class BlogTagsViewComponent : NopViewComponent
+    public partial class BlogTagsViewComponent : NopViewComponent
     {
-        private readonly BlogSettings _blogSettings;
-        private readonly IBlogModelFactory _blogModelFactory;
+        protected readonly BlogSettings _blogSettings;
+        protected readonly IBlogModelFactory _blogModelFactory;
 
         public BlogTagsViewComponent(BlogSettings blogSettings, IBlogModelFactory blogModelFactory)
         {

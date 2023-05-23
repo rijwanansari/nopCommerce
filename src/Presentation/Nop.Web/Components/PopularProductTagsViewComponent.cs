@@ -1,16 +1,14 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Nop.Core.Domain.Catalog;
 using Nop.Web.Factories;
 using Nop.Web.Framework.Components;
 
 namespace Nop.Web.Components
 {
-    public class PopularProductTagsViewComponent : NopViewComponent
+    public partial class PopularProductTagsViewComponent : NopViewComponent
     {
-        private readonly CatalogSettings _catalogSettings;
-        private readonly ICatalogModelFactory _catalogModelFactory;
+        protected readonly CatalogSettings _catalogSettings;
+        protected readonly ICatalogModelFactory _catalogModelFactory;
 
         public PopularProductTagsViewComponent(CatalogSettings catalogSettings, ICatalogModelFactory catalogModelFactory)
         {

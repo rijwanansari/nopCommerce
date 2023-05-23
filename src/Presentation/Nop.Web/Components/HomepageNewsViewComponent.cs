@@ -1,15 +1,14 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Nop.Core.Domain.News;
 using Nop.Web.Factories;
 using Nop.Web.Framework.Components;
 
 namespace Nop.Web.Components
 {
-    public class HomepageNewsViewComponent : NopViewComponent
+    public partial class HomepageNewsViewComponent : NopViewComponent
     {
-        private readonly INewsModelFactory _newsModelFactory;
-        private readonly NewsSettings _newsSettings;
+        protected readonly INewsModelFactory _newsModelFactory;
+        protected readonly NewsSettings _newsSettings;
 
         public HomepageNewsViewComponent(INewsModelFactory newsModelFactory, NewsSettings newsSettings)
         {

@@ -10,10 +10,10 @@
 * The product is being developed and supported by the professional team since 2008.
 * nopCommerce has been downloaded more than 3,000,000 times.
 * The active developer community has more than 250,000 members.
-* nopCommerce runs on .NET 6 with an MS SQL 2012 (or higher) backend database.
+* nopCommerce runs on .NET 7 with an MS SQL 2012 (or higher) backend database.
 * nopCommerce is cross-platform, and you can run it on Windows, Linux, or Mac.
-* nopCommerce supports Docker and MySQL out of the box, so you can easily run nopCommerce on a Linux machine.
-* nopCommerce supports PostgreSQL database.
+* nopCommerce supports Docker out of the box, so you can easily run nopCommerce on a Linux machine.
+* nopCommerce supports PostgreSQL and MySQL databases.
 * nopCommerce fully supports web farms. You can read more about it [here](https://docs.nopcommerce.com/en/developer/tutorials/web-farms.html?utm_source=github&utm_medium=referral&utm_campaign=documentation&utm_content=text).  
 * All methods in nopCommerce are async.
 * nopCommerce supports multi-factor authentication out of the box.
@@ -45,7 +45,7 @@ Evaluate the functionality and convenience of nopCommerce as a customer and stor
 
 Front End | Admin area
 ----|------
-[![ScreenShot](https://www.nopcommerce.com/images/github/public-demo.png#v1)](https://frontend.nopcommerce.com?utm_source=github&utm_medium=referral&utm_campaign=demo_store&utm_content=button) | [![ScreenShot](https://www.nopcommerce.com/images/github/admin-demo.png#v1)](https://admin-demo.nopcommerce.com/admin?utm_source=github&utm_medium=referral&utm_campaign=demo_store&utm_content=button)
+[![ScreenShot](https://www.nopcommerce.com/images/github/public-demo.png#v1)](https://demo.nopcommerce.com?utm_source=github&utm_medium=referral&utm_campaign=demo_store&utm_content=button) | [![ScreenShot](https://www.nopcommerce.com/images/github/admin-demo.png#v1)](https://admin-demo.nopcommerce.com/admin?utm_source=github&utm_medium=referral&utm_campaign=demo_store&utm_content=button)
 
 
 ### nopCommerce resources ###

@@ -1,13 +1,12 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Nop.Web.Factories;
 using Nop.Web.Framework.Components;
 
 namespace Nop.Web.Components
 {
-    public class CustomerNavigationViewComponent : NopViewComponent
+    public partial class CustomerNavigationViewComponent : NopViewComponent
     {
-        private readonly ICustomerModelFactory _customerModelFactory;
+        protected readonly ICustomerModelFactory _customerModelFactory;
 
         public CustomerNavigationViewComponent(ICustomerModelFactory customerModelFactory)
         {

@@ -1,6 +1,4 @@
-﻿using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 using Newtonsoft.Json;
 using Nop.Core;
 using Nop.Plugin.Widgets.FacebookPixel.Domain;
@@ -10,11 +8,11 @@ namespace Nop.Plugin.Widgets.FacebookPixel.Services
     /// <summary>
     /// Represents the HTTP client to request Facebook Conversions API
     /// </summary>
-    public partial class FacebookConversionsHttpClient
+    public class FacebookConversionsHttpClient
     {
         #region Fields
 
-        private readonly HttpClient _httpClient;
+        protected readonly HttpClient _httpClient;
 
         #endregion
 

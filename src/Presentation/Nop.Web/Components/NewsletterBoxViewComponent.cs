@@ -1,15 +1,14 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Nop.Core.Domain.Customers;
 using Nop.Web.Factories;
 using Nop.Web.Framework.Components;
 
 namespace Nop.Web.Components
 {
-    public class NewsletterBoxViewComponent : NopViewComponent
+    public partial class NewsletterBoxViewComponent : NopViewComponent
     {
-        private readonly CustomerSettings _customerSettings;
-        private readonly INewsletterModelFactory _newsletterModelFactory;
+        protected readonly CustomerSettings _customerSettings;
+        protected readonly INewsletterModelFactory _newsletterModelFactory;
 
         public NewsletterBoxViewComponent(CustomerSettings customerSettings, INewsletterModelFactory newsletterModelFactory)
         {

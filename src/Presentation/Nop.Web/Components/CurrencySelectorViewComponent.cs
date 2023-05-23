@@ -1,13 +1,12 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Nop.Web.Factories;
 using Nop.Web.Framework.Components;
 
 namespace Nop.Web.Components
 {
-    public class CurrencySelectorViewComponent : NopViewComponent
+    public partial class CurrencySelectorViewComponent : NopViewComponent
     {
-        private readonly ICommonModelFactory _commonModelFactory;
+        protected readonly ICommonModelFactory _commonModelFactory;
 
         public CurrencySelectorViewComponent(ICommonModelFactory commonModelFactory)
         {

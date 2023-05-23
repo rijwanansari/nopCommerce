@@ -4,9 +4,9 @@ using Nop.Web.Framework.Components;
 
 namespace Nop.Web.Components
 {
-    public class NewsRssHeaderLinkViewComponent : NopViewComponent
+    public partial class NewsRssHeaderLinkViewComponent : NopViewComponent
     {
-        private readonly NewsSettings _newsSettings;
+        protected readonly NewsSettings _newsSettings;
 
         public NewsRssHeaderLinkViewComponent(NewsSettings newsSettings)
         {

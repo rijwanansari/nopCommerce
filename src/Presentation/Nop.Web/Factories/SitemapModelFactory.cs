@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
+﻿using System.Globalization;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -20,6 +15,7 @@ using Nop.Core.Domain.News;
 using Nop.Core.Domain.Seo;
 using Nop.Core.Domain.Topics;
 using Nop.Core.Events;
+using Nop.Core.Infrastructure;
 using Nop.Services.Blogs;
 using Nop.Services.Catalog;
 using Nop.Services.Customers;
@@ -40,31 +36,33 @@ namespace Nop.Web.Factories
     {
         #region Fields
 
-        private readonly BlogSettings _blogSettings;
-        private readonly ForumSettings _forumSettings;
-        private readonly IActionContextAccessor _actionContextAccessor;
-        private readonly IBlogService _blogService;
-        private readonly ICategoryService _categoryService;
-        private readonly ICustomerService _customerService;
-        private readonly IEventPublisher _eventPublisher;
-        private readonly ILanguageService _languageService;
-        private readonly ILocalizationService _localizationService;
-        private readonly IManufacturerService _manufacturerService;
-        private readonly INewsService _newsService;
-        private readonly INopUrlHelper _nopUrlHelper;
-        private readonly IProductService _productService;
-        private readonly IProductTagService _productTagService;
-        private readonly IStaticCacheManager _staticCacheManager;
-        private readonly IStoreContext _storeContext;
-        private readonly ITopicService _topicService;
-        private readonly IUrlHelperFactory _urlHelperFactory;
-        private readonly IUrlRecordService _urlRecordService;
-        private readonly IWebHelper _webHelper;
-        private readonly IWorkContext _workContext;
-        private readonly LocalizationSettings _localizationSettings;
-        private readonly NewsSettings _newsSettings;
-        private readonly SitemapSettings _sitemapSettings;
-        private readonly SitemapXmlSettings _sitemapXmlSettings;
+        protected readonly BlogSettings _blogSettings;
+        protected readonly ForumSettings _forumSettings;
+        protected readonly IActionContextAccessor _actionContextAccessor;
+        protected readonly IBlogService _blogService;
+        protected readonly ICategoryService _categoryService;
+        protected readonly ICustomerService _customerService;
+        protected readonly IEventPublisher _eventPublisher;
+        protected readonly ILanguageService _languageService;
+        protected readonly ILocalizationService _localizationService;
+        protected readonly ILocker _locker;
+        protected readonly IManufacturerService _manufacturerService;
+        protected readonly INewsService _newsService;
+        protected readonly INopFileProvider _nopFileProvider;
+        protected readonly INopUrlHelper _nopUrlHelper;
+        protected readonly IProductService _productService;
+        protected readonly IProductTagService _productTagService;
+        protected readonly IStaticCacheManager _staticCacheManager;
+        protected readonly IStoreContext _storeContext;
+        protected readonly ITopicService _topicService;
+        protected readonly IUrlHelperFactory _urlHelperFactory;
+        protected readonly IUrlRecordService _urlRecordService;
+        protected readonly IWebHelper _webHelper;
+        protected readonly IWorkContext _workContext;
+        protected readonly LocalizationSettings _localizationSettings;
+        protected readonly NewsSettings _newsSettings;
+        protected readonly SitemapSettings _sitemapSettings;
+        protected readonly SitemapXmlSettings _sitemapXmlSettings;
 
         #endregion
 
@@ -79,8 +77,10 @@ namespace Nop.Web.Factories
             IEventPublisher eventPublisher,
             ILanguageService languageService,
             ILocalizationService localizationService,
+            ILocker locker,
             IManufacturerService manufacturerService,
             INewsService newsService,
+            INopFileProvider nopFileProvider,
             INopUrlHelper nopUrlHelper,
             IProductService productService,
             IProductTagService productTagService,
@@ -105,8 +105,10 @@ namespace Nop.Web.Factories
             _eventPublisher = eventPublisher;
             _languageService = languageService;
             _localizationService = localizationService;
+            _locker = locker;
             _manufacturerService = manufacturerService;
             _newsService = newsService;
+            _nopFileProvider = nopFileProvider;
             _nopUrlHelper = nopUrlHelper;
             _productService = productService;
             _productTagService = productTagService;
@@ -363,34 +365,34 @@ namespace Nop.Web.Factories
         /// <param name="stream">Stream</param>
         /// <param name="sitemapNumber">The number of sitemaps</param>
         /// <returns>A task that represents the asynchronous operation</returns>
-        protected virtual async Task WriteSitemapIndexAsync(Stream stream, int sitemapNumber)
+        protected virtual async Task WriteSitemapIndexAsync(MemoryStream stream, int sitemapNumber)
         {
-            var urlHelper = GetUrlHelper();
-
-            await using var writer = new XmlTextWriter(stream, Encoding.UTF8)
+            await using var writer = XmlWriter.Create(stream, new XmlWriterSettings
             {
-                Formatting = Formatting.Indented
-            };
-            writer.WriteStartDocument();
-            writer.WriteStartElement("sitemapindex");
-            writer.WriteAttributeString("xmlns", "http://www.sitemaps.org/schemas/sitemap/0.9");
-            writer.WriteAttributeString("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-            writer.WriteAttributeString("xmlns:xhtml", "http://www.w3.org/1999/xhtml");
-            writer.WriteAttributeString("xsi:schemaLocation", "http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd");
+                Async = true,
+                Encoding = Encoding.UTF8,
+                Indent = true,
+                ConformanceLevel = ConformanceLevel.Auto
+            });
+
+            await writer.WriteStartDocumentAsync();
+            await writer.WriteStartElementAsync(prefix: null, localName: "sitemapindex", ns: "http://www.sitemaps.org/schemas/sitemap/0.9");
 
             //write URLs of all available sitemaps
+            var urlHelper = GetUrlHelper();
+
             for (var id = 1; id <= sitemapNumber; id++)
             {
                 var url = urlHelper.RouteUrl("sitemap-indexed.xml", new { Id = id }, await GetHttpProtocolAsync());
                 var location = await XmlHelper.XmlEncodeAsync(url);
 
-                writer.WriteStartElement("sitemap");
-                writer.WriteElementString("loc", location);
-                writer.WriteElementString("lastmod", DateTime.UtcNow.ToString(NopSeoDefaults.SitemapDateFormat));
-                writer.WriteEndElement();
+                await writer.WriteStartElementAsync(null, "sitemap", null);
+                await writer.WriteElementStringAsync(null, "loc", null, location);
+                await writer.WriteElementStringAsync(null, "lastmod", null, DateTime.UtcNow.ToString(NopSeoDefaults.SitemapDateFormat));
+                await writer.WriteEndElementAsync();
             }
 
-            writer.WriteEndElement();
+            await writer.WriteEndElementAsync();
         }
 
         /// <summary>
@@ -399,18 +401,22 @@ namespace Nop.Web.Factories
         /// <param name="stream">Stream</param>
         /// <param name="sitemapUrls">List of sitemap URLs</param>
         /// <returns>A task that represents the asynchronous operation</returns>
-        protected virtual async Task WriteSitemapAsync(Stream stream, IList<SitemapUrlModel> sitemapUrls)
+        protected virtual async Task WriteSitemapAsync(MemoryStream stream, IList<SitemapUrlModel> sitemapUrls)
         {
-            await using var writer = new XmlTextWriter(stream, Encoding.UTF8)
+            await using var writer = XmlWriter.Create(stream, new XmlWriterSettings
             {
-                Formatting = Formatting.Indented
-            };
-            writer.WriteStartDocument();
-            writer.WriteStartElement("urlset");
-            writer.WriteAttributeString("xmlns", "http://www.sitemaps.org/schemas/sitemap/0.9");
-            writer.WriteAttributeString("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-            writer.WriteAttributeString("xmlns:xhtml", "http://www.w3.org/1999/xhtml");
-            writer.WriteAttributeString("xsi:schemaLocation", "http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd");
+                Async = true,
+                Encoding = Encoding.UTF8,
+                Indent = true,
+                ConformanceLevel = ConformanceLevel.Auto
+            });
+
+            await writer.WriteStartDocumentAsync();
+            await writer.WriteStartElementAsync(prefix: null, localName: "urlset", ns: "http://www.sitemaps.org/schemas/sitemap/0.9");
+            await writer.WriteAttributeStringAsync(prefix: "xsi", "schemaLocation",
+                "http://www.w3.org/2001/XMLSchema-instance",
+                "http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd http://www.w3.org/1999/xhtml http://www.w3.org/2002/08/xhtml/xhtml1-strict.xsd");
+            await writer.WriteAttributeStringAsync(prefix: "xmlns", "xhtml", null, "http://www.w3.org/1999/xhtml");
 
             //write URLs from list to the sitemap
             foreach (var sitemapUrl in sitemapUrls)
@@ -426,7 +432,7 @@ namespace Nop.Web.Factories
                 }
             }
 
-            writer.WriteEndElement();
+            await writer.WriteEndElementAsync();
         }
 
         /// <summary>
@@ -435,15 +441,15 @@ namespace Nop.Web.Factories
         /// <param name="writer">XML stream writer</param>
         /// <param name="sitemapUrl">Sitemap URL</param>
         /// <returns>A task that represents the asynchronous operation</returns>
-        protected virtual async Task WriteSitemapUrlAsync(XmlTextWriter writer, SitemapUrlModel sitemapUrl)
+        protected virtual async Task WriteSitemapUrlAsync(XmlWriter writer, SitemapUrlModel sitemapUrl)
         {
             if (string.IsNullOrEmpty(sitemapUrl.Location))
                 return;
 
-            writer.WriteStartElement("url");
+            await writer.WriteStartElementAsync(null, "url", null);
 
             var loc = await XmlHelper.XmlEncodeAsync(sitemapUrl.Location);
-            writer.WriteElementString("loc", loc);
+            await writer.WriteElementStringAsync(null, "loc", null, loc);
 
             //write all related url
             foreach (var alternate in sitemapUrl.AlternateLocations)
@@ -459,34 +465,36 @@ namespace Nop.Web.Factories
                 if (string.IsNullOrEmpty(lang?.UniqueSeoCode))
                     continue;
 
-                writer.WriteStartElement("xhtml:link");
-                writer.WriteAttributeString("rel", "alternate");
-                writer.WriteAttributeString("hreflang", lang.UniqueSeoCode);
-                writer.WriteAttributeString("href", altLoc);
-                writer.WriteEndElement();
+                await writer.WriteStartElementAsync("xhtml", "link", null);
+                await writer.WriteAttributeStringAsync(null, "rel", null, "alternate");
+                await writer.WriteAttributeStringAsync(null, "hreflang", null, lang.UniqueSeoCode);
+                await writer.WriteAttributeStringAsync(null, "href", null, altLoc);
+                await writer.WriteEndElementAsync();
             }
 
-            writer.WriteElementString("changefreq", sitemapUrl.UpdateFrequency.ToString().ToLowerInvariant());
-            writer.WriteElementString("lastmod", sitemapUrl.UpdatedOn.ToString(NopSeoDefaults.SitemapDateFormat, CultureInfo.InvariantCulture));
-            writer.WriteEndElement();
+            await writer.WriteElementStringAsync(null, "changefreq", null, sitemapUrl.UpdateFrequency.ToString().ToLowerInvariant());
+            await writer.WriteElementStringAsync(null, "lastmod", null, sitemapUrl.UpdatedOn.ToString(NopSeoDefaults.SitemapDateFormat, CultureInfo.InvariantCulture));
+            await writer.WriteEndElementAsync();
         }
 
         /// <summary>
         /// This will build an XML sitemap for better index with search engines.
         /// See http://en.wikipedia.org/wiki/Sitemaps for more information.
         /// </summary>
+        /// <param name="fullPath">The path and name of the sitemap file</param>
         /// <param name="id">Sitemap identifier</param>
-        /// <param name="stream">Stream of sitemap.</param>
         /// <returns>A task that represents the asynchronous operation</returns>
-        protected virtual async Task GenerateAsync(Stream stream, int? id)
+        protected virtual async Task GenerateAsync(string fullPath, int id = 0)
         {
             //generate all URLs for the sitemap
             var sitemapUrls = await GenerateUrlsAsync();
 
             //split URLs into separate lists based on the max size 
+            var numberOfParts = (int)Math.Ceiling((decimal)sitemapUrls.Sum(x => (x.AlternateLocations?.Count ?? 0) + 1) / NopSeoDefaults.SitemapMaxUrlNumber);
+
             var sitemaps = sitemapUrls
                 .Select((url, index) => new { Index = index, Value = url })
-                .GroupBy(group => group.Index / NopSeoDefaults.SitemapMaxUrlNumber)
+                .GroupBy(group => group.Index % numberOfParts)
                 .Select(group => group
                     .Select(url => url.Value)
                     .ToList()).ToList();
@@ -494,14 +502,16 @@ namespace Nop.Web.Factories
             if (!sitemaps.Any())
                 return;
 
-            if (id.HasValue)
+            await using var stream = new MemoryStream();
+
+            if (id > 0)
             {
                 //requested sitemap does not exist
-                if (id.Value == 0 || id.Value > sitemaps.Count)
+                if (id > sitemaps.Count)
                     return;
 
                 //otherwise write a certain numbered sitemap file into the stream
-                await WriteSitemapAsync(stream, sitemaps.ElementAt(id.Value - 1));
+                await WriteSitemapAsync(stream, sitemaps.ElementAt(id - 1));
             }
             else
             {
@@ -517,6 +527,14 @@ namespace Nop.Web.Factories
                     await WriteSitemapAsync(stream, sitemaps.First());
                 }
             }
+
+            if (_nopFileProvider.FileExists(fullPath))
+                _nopFileProvider.DeleteFile(fullPath);
+
+
+            using var fileStream = _nopFileProvider.GetOrCreateFile(fullPath);
+            stream.Position = 0;
+            await stream.CopyToAsync(fileStream, 81920);
         }
 
         #endregion
@@ -738,23 +756,29 @@ namespace Nop.Web.Factories
         /// A task that represents the asynchronous operation
         /// The task result contains the sitemap model with sitemap.xml as string
         /// </returns>
-        public virtual async Task<SitemapXmlModel> PrepareSitemapXmlModelAsync(int? id)
+        public virtual async Task<SitemapXmlModel> PrepareSitemapXmlModelAsync(int id = 0)
         {
             var language = await _workContext.GetWorkingLanguageAsync();
-            var customer = await _workContext.GetCurrentCustomerAsync();
-            var customerRoleIds = await _customerService.GetCustomerRoleIdsAsync(customer);
             var store = await _storeContext.GetCurrentStoreAsync();
-            var cacheKey = _staticCacheManager.PrepareKeyForDefaultCache(NopModelCacheDefaults.SitemapSeoModelKey,
-                id, language, customerRoleIds, store);
 
-            var sitemapXml = await _staticCacheManager.GetAsync(cacheKey, async () =>
+            var fileName = string.Format(NopSeoDefaults.SitemapXmlFilePattern, store.Id, language.Id, id);
+            var fullPath = _nopFileProvider.GetAbsolutePath(NopSeoDefaults.SitemapXmlDirectory, fileName);
+
+            if (_nopFileProvider.FileExists(fullPath) && _nopFileProvider.GetLastWriteTimeUtc(fullPath) > DateTime.UtcNow.AddHours(-_sitemapXmlSettings.RebuildSitemapXmlAfterHours))
             {
-                await using var stream = new MemoryStream();
-                await GenerateAsync(stream, id);
-                return Encoding.UTF8.GetString(stream.ToArray());
-            });
+                return new SitemapXmlModel { SitemapXmlPath = fullPath };
+            }
 
-            return new SitemapXmlModel { SitemapXml = sitemapXml };
+            //execute task with lock
+            if (!await _locker.PerformActionWithLockAsync(
+                fullPath,
+                TimeSpan.FromSeconds(_sitemapXmlSettings.SitemapBuildOperationDelay),
+                async () => await GenerateAsync(fullPath, id)))
+            {
+                throw new InvalidOperationException();
+            }
+
+            return new SitemapXmlModel { SitemapXmlPath = fullPath };
         }
 
         /// <summary>
@@ -801,7 +825,7 @@ namespace Nop.Web.Factories
                 ? await _languageService.GetAllLanguagesAsync(storeId: store.Id)
                 : null;
 
-            if (languages == null)
+            if (languages == null || languages.Count == 1)
                 return new SitemapUrlModel(url, new List<string>(), updateFreq, updatedOn);
 
             var pathBase = _actionContextAccessor.ActionContext.HttpContext.Request.PathBase;

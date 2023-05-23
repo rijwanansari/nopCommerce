@@ -1,13 +1,12 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Nop.Web.Factories;
 using Nop.Web.Framework.Components;
 
 namespace Nop.Web.Components
 {
-    public class HeaderLinksViewComponent : NopViewComponent
+    public partial class HeaderLinksViewComponent : NopViewComponent
     {
-        private readonly ICommonModelFactory _commonModelFactory;
+        protected readonly ICommonModelFactory _commonModelFactory;
 
         public HeaderLinksViewComponent(ICommonModelFactory commonModelFactory)
         {

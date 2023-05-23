@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Nop.Core;
 using Nop.Services.Security;
 using Nop.Web.Areas.Admin.Factories;
@@ -10,13 +9,13 @@ namespace Nop.Web.Areas.Admin.Components
     /// <summary>
     /// Represents a view component that displays common statistics
     /// </summary>
-    public class CommonStatisticsViewComponent : NopViewComponent
+    public partial class CommonStatisticsViewComponent : NopViewComponent
     {
         #region Fields
 
-        private readonly ICommonModelFactory _commonModelFactory;
-        private readonly IPermissionService _permissionService;
-        private readonly IWorkContext _workContext;
+        protected readonly ICommonModelFactory _commonModelFactory;
+        protected readonly IPermissionService _permissionService;
+        protected readonly IWorkContext _workContext;
 
         #endregion
 

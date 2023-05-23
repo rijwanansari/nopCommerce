@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
+﻿using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -12,7 +8,9 @@ using Nop.Core.Domain.Catalog;
 using Nop.Core.Domain.Customers;
 using Nop.Core.Domain.Discounts;
 using Nop.Core.Domain.Orders;
+using Nop.Core.Domain.Stores;
 using Nop.Data;
+using Nop.Services.Attributes;
 using Nop.Services.Catalog;
 using Nop.Services.Common;
 using Nop.Services.Customers;
@@ -34,33 +32,34 @@ namespace Nop.Services.Orders
     {
         #region Fields
 
-        private readonly CatalogSettings _catalogSettings;
-        private readonly IAclService _aclService;
-        private readonly IActionContextAccessor _actionContextAccessor;
-        private readonly ICheckoutAttributeParser _checkoutAttributeParser;
-        private readonly ICheckoutAttributeService _checkoutAttributeService;
-        private readonly ICurrencyService _currencyService;
-        private readonly ICustomerService _customerService;
-        private readonly IDateRangeService _dateRangeService;
-        private readonly IDateTimeHelper _dateTimeHelper;
-        private readonly IGenericAttributeService _genericAttributeService;
-        private readonly ILocalizationService _localizationService;
-        private readonly IPermissionService _permissionService;
-        private readonly IPriceCalculationService _priceCalculationService;
-        private readonly IPriceFormatter _priceFormatter;
-        private readonly IProductAttributeParser _productAttributeParser;
-        private readonly IProductAttributeService _productAttributeService;
-        private readonly IProductService _productService;
-        private readonly IRepository<ShoppingCartItem> _sciRepository;
-        private readonly IShippingService _shippingService;
-        private readonly IStaticCacheManager _staticCacheManager;
-        private readonly IStoreContext _storeContext;
-        private readonly IStoreMappingService _storeMappingService;
-        private readonly IUrlHelperFactory _urlHelperFactory;
-        private readonly IUrlRecordService _urlRecordService;
-        private readonly IWorkContext _workContext;
-        private readonly OrderSettings _orderSettings;
-        private readonly ShoppingCartSettings _shoppingCartSettings;
+        protected readonly CatalogSettings _catalogSettings;
+        protected readonly IAclService _aclService;
+        protected readonly IActionContextAccessor _actionContextAccessor;
+        protected readonly IAttributeParser<CheckoutAttribute, CheckoutAttributeValue> _checkoutAttributeParser;
+        protected readonly IAttributeService<CheckoutAttribute, CheckoutAttributeValue> _checkoutAttributeService;
+        protected readonly ICurrencyService _currencyService;
+        protected readonly ICustomerService _customerService;
+        protected readonly IDateRangeService _dateRangeService;
+        protected readonly IDateTimeHelper _dateTimeHelper;
+        protected readonly IGenericAttributeService _genericAttributeService;
+        protected readonly ILocalizationService _localizationService;
+        protected readonly IPermissionService _permissionService;
+        protected readonly IPriceCalculationService _priceCalculationService;
+        protected readonly IPriceFormatter _priceFormatter;
+        protected readonly IProductAttributeParser _productAttributeParser;
+        protected readonly IProductAttributeService _productAttributeService;
+        protected readonly IProductService _productService;
+        protected readonly IRepository<ShoppingCartItem> _sciRepository;
+        protected readonly IShippingService _shippingService;
+        protected readonly IStaticCacheManager _staticCacheManager;
+        protected readonly IStoreContext _storeContext;
+        protected readonly IStoreService _storeService;
+        protected readonly IStoreMappingService _storeMappingService;
+        protected readonly IUrlHelperFactory _urlHelperFactory;
+        protected readonly IUrlRecordService _urlRecordService;
+        protected readonly IWorkContext _workContext;
+        protected readonly OrderSettings _orderSettings;
+        protected readonly ShoppingCartSettings _shoppingCartSettings;
 
         #endregion
 
@@ -69,8 +68,8 @@ namespace Nop.Services.Orders
         public ShoppingCartService(CatalogSettings catalogSettings,
             IAclService aclService,
             IActionContextAccessor actionContextAccessor,
-            ICheckoutAttributeParser checkoutAttributeParser,
-            ICheckoutAttributeService checkoutAttributeService,
+            IAttributeParser<CheckoutAttribute, CheckoutAttributeValue> checkoutAttributeParser,
+            IAttributeService<CheckoutAttribute, CheckoutAttributeValue> checkoutAttributeService,
             ICurrencyService currencyService,
             ICustomerService customerService,
             IDateRangeService dateRangeService,
@@ -87,6 +86,7 @@ namespace Nop.Services.Orders
             IShippingService shippingService,
             IStaticCacheManager staticCacheManager,
             IStoreContext storeContext,
+            IStoreService storeService,
             IStoreMappingService storeMappingService,
             IUrlHelperFactory urlHelperFactory,
             IUrlRecordService urlRecordService,
@@ -115,6 +115,7 @@ namespace Nop.Services.Orders
             _shippingService = shippingService;
             _staticCacheManager = staticCacheManager;
             _storeContext = storeContext;
+            _storeService = storeService;
             _storeMappingService = storeMappingService;
             _urlHelperFactory = urlHelperFactory;
             _urlRecordService = urlRecordService;
@@ -1187,17 +1188,17 @@ namespace Nop.Services.Orders
                 return warnings;
 
             //selected attributes
-            var attributes1 = await _checkoutAttributeParser.ParseCheckoutAttributesAsync(checkoutAttributesXml);
+            var attributes1 = await _checkoutAttributeParser.ParseAttributesAsync(checkoutAttributesXml);
 
             //existing checkout attributes
             var excludeShippableAttributes = !await ShoppingCartRequiresShippingAsync(shoppingCart);
             var store = await _storeContext.GetCurrentStoreAsync();
-            var attributes2 = await _checkoutAttributeService.GetAllCheckoutAttributesAsync(store.Id, excludeShippableAttributes);
+            var attributes2 = await _checkoutAttributeService.GetAllAttributesAsync(_staticCacheManager, _storeMappingService, store.Id, excludeShippableAttributes);
 
             //validate conditional attributes only (if specified)
             attributes2 = await attributes2.WhereAwait(async x =>
             {
-                var conditionMet = await _checkoutAttributeParser.IsConditionMetAsync(x, checkoutAttributesXml);
+                var conditionMet = await _checkoutAttributeParser.IsConditionMetAsync(x.ConditionAttributeXml, checkoutAttributesXml);
                 return !conditionMet.HasValue || conditionMet.Value;
             }).ToListAsync();
 
@@ -1349,9 +1350,11 @@ namespace Nop.Services.Orders
 
             var customer = await _customerService.GetCustomerByIdAsync(shoppingCartItem.CustomerId);
             var product = await _productService.GetProductByIdAsync(shoppingCartItem.ProductId);
+            var store = await _storeService.GetStoreByIdAsync(shoppingCartItem.StoreId);
 
             return await GetUnitPriceAsync(product,
                 customer,
+                store,
                 shoppingCartItem.ShoppingCartType,
                 shoppingCartItem.Quantity,
                 shoppingCartItem.AttributesXml,
@@ -1366,6 +1369,7 @@ namespace Nop.Services.Orders
         /// </summary>
         /// <param name="product">Product</param>
         /// <param name="customer">Customer</param>
+        /// <param name="store">Store</param>
         /// <param name="shoppingCartType">Shopping cart type</param>
         /// <param name="quantity">Quantity</param>
         /// <param name="attributesXml">Product attributes (XML format)</param>
@@ -1379,6 +1383,7 @@ namespace Nop.Services.Orders
         /// </returns>
         public virtual async Task<(decimal unitPrice, decimal discountAmount, List<Discount> appliedDiscounts)> GetUnitPriceAsync(Product product,
             Customer customer,
+            Store store,
             ShoppingCartType shoppingCartType,
             int quantity,
             string attributesXml,
@@ -1402,6 +1407,7 @@ namespace Nop.Services.Orders
             {
                 (_, finalPrice, discountAmount, appliedDiscounts) = await _priceCalculationService.GetFinalPriceAsync(product,
                         customer,
+                        store,
                         combination.OverriddenPrice.Value,
                         decimal.Zero,
                         includeDiscounts,
@@ -1418,7 +1424,12 @@ namespace Nop.Services.Orders
                 {
                     foreach (var attributeValue in attributeValues)
                     {
-                        attributesTotalPrice += await _priceCalculationService.GetProductAttributeValuePriceAdjustmentAsync(product, attributeValue, customer, product.CustomerEntersPrice ? (decimal?)customerEnteredPrice : null);
+                        attributesTotalPrice += await _priceCalculationService.GetProductAttributeValuePriceAdjustmentAsync(product,
+                            attributeValue,
+                            customer,
+                            store,
+                            product.CustomerEntersPrice ? (decimal?)customerEnteredPrice : null,
+                            quantity);
                     }
                 }
 
@@ -1449,6 +1460,7 @@ namespace Nop.Services.Orders
 
                     (_, finalPrice, discountAmount, appliedDiscounts) = await _priceCalculationService.GetFinalPriceAsync(product,
                         customer,
+                        store,
                         attributesTotalPrice,
                         includeDiscounts,
                         qty,

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Nop.Web.Framework.Mvc.ModelBinding;
 using Nop.Web.Framework.Models;
+using Nop.Web.Framework.Mvc.ModelBinding;
 
 namespace Nop.Web.Areas.Admin.Models.Settings
 {
@@ -84,6 +84,10 @@ namespace Nop.Web.Areas.Admin.Models.Settings
         [NopResourceDisplayName("Admin.Configuration.Settings.Media.DefaultPictureZoomEnabled")]
         public bool DefaultPictureZoomEnabled { get; set; }
         public bool DefaultPictureZoomEnabled_OverrideForStore { get; set; }
+
+        [NopResourceDisplayName("Admin.Configuration.Settings.Media.AllowSVGUploads")]
+        public bool AllowSVGUploads { get; set; }
+        public bool AllowSVGUploads_OverrideForStore { get; set; }
 
         #endregion
     }

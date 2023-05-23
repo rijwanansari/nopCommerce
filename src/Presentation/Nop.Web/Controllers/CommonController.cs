@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Nop.Core;
 using Nop.Core.Domain;
 using Nop.Core.Domain.Common;
@@ -30,26 +28,26 @@ namespace Nop.Web.Controllers
     {
         #region Fields
 
-        private readonly CaptchaSettings _captchaSettings;
-        private readonly CommonSettings _commonSettings;
-        private readonly ICommonModelFactory _commonModelFactory;
-        private readonly ICurrencyService _currencyService;
-        private readonly ICustomerActivityService _customerActivityService;
-        private readonly IGenericAttributeService _genericAttributeService;
-        private readonly IHtmlFormatter _htmlFormatter;
-        private readonly ILanguageService _languageService;
-        private readonly ILocalizationService _localizationService;
-        private readonly ISitemapModelFactory _sitemapModelFactory;
-        private readonly IStoreContext _storeContext;
-        private readonly IThemeContext _themeContext;
-        private readonly IVendorService _vendorService;
-        private readonly IWorkContext _workContext;
-        private readonly IWorkflowMessageService _workflowMessageService;
-        private readonly LocalizationSettings _localizationSettings;
-        private readonly SitemapSettings _sitemapSettings;
-        private readonly SitemapXmlSettings _sitemapXmlSettings;
-        private readonly StoreInformationSettings _storeInformationSettings;
-        private readonly VendorSettings _vendorSettings;
+        protected readonly CaptchaSettings _captchaSettings;
+        protected readonly CommonSettings _commonSettings;
+        protected readonly ICommonModelFactory _commonModelFactory;
+        protected readonly ICurrencyService _currencyService;
+        protected readonly ICustomerActivityService _customerActivityService;
+        protected readonly IGenericAttributeService _genericAttributeService;
+        protected readonly IHtmlFormatter _htmlFormatter;
+        protected readonly ILanguageService _languageService;
+        protected readonly ILocalizationService _localizationService;
+        protected readonly ISitemapModelFactory _sitemapModelFactory;
+        protected readonly IStoreContext _storeContext;
+        protected readonly IThemeContext _themeContext;
+        protected readonly IVendorService _vendorService;
+        protected readonly IWorkContext _workContext;
+        protected readonly IWorkflowMessageService _workflowMessageService;
+        protected readonly LocalizationSettings _localizationSettings;
+        protected readonly SitemapSettings _sitemapSettings;
+        protected readonly SitemapXmlSettings _sitemapXmlSettings;
+        protected readonly StoreInformationSettings _storeInformationSettings;
+        protected readonly VendorSettings _vendorSettings;
 
         #endregion
 
@@ -112,9 +110,9 @@ namespace Nop.Web.Controllers
         }
 
         //available even when a store is closed
-        [CheckAccessClosedStore(true)]
+        [CheckAccessClosedStore(ignore: true)]
         //available even when navigation is not allowed
-        [CheckAccessPublicStore(true)]
+        [CheckAccessPublicStore(ignore: true)]
         public virtual async Task<IActionResult> SetLanguage(int langid, string returnUrl = "")
         {
             var language = await _languageService.GetLanguageByIdAsync(langid);
@@ -146,7 +144,7 @@ namespace Nop.Web.Controllers
         }
 
         //available even when navigation is not allowed
-        [CheckAccessPublicStore(true)]
+        [CheckAccessPublicStore(ignore: true)]
         public virtual async Task<IActionResult> SetCurrency(int customerCurrency, string returnUrl = "")
         {
             var currency = await _currencyService.GetCurrencyByIdAsync(customerCurrency);
@@ -165,7 +163,7 @@ namespace Nop.Web.Controllers
         }
 
         //available even when navigation is not allowed
-        [CheckAccessPublicStore(true)]
+        [CheckAccessPublicStore(ignore: true)]
         public virtual async Task<IActionResult> SetTaxType(int customerTaxType, string returnUrl = "")
         {
             var taxDisplayType = (TaxDisplayType)Enum.ToObject(typeof(TaxDisplayType), customerTaxType);
@@ -184,7 +182,7 @@ namespace Nop.Web.Controllers
 
         //contact us page
         //available even when a store is closed
-        [CheckAccessClosedStore(true)]
+        [CheckAccessClosedStore(ignore: true)]
         public virtual async Task<IActionResult> ContactUs()
         {
             var model = new ContactUsModel();
@@ -196,7 +194,7 @@ namespace Nop.Web.Controllers
         [HttpPost, ActionName("ContactUs")]
         [ValidateCaptcha]
         //available even when a store is closed
-        [CheckAccessClosedStore(true)]
+        [CheckAccessClosedStore(ignore: true)]
         public virtual async Task<IActionResult> ContactUsSend(ContactUsModel model, bool captchaValid)
         {
             //validate CAPTCHA
@@ -213,7 +211,7 @@ namespace Nop.Web.Controllers
                 var body = _htmlFormatter.FormatText(model.Enquiry, false, true, false, false, false, false);
 
                 await _workflowMessageService.SendContactUsMessageAsync((await _workContext.GetWorkingLanguageAsync()).Id,
-                    model.Email.Trim(), model.FullName, subject, body);
+                    model.Email, model.FullName, subject, body);
 
                 model.SuccessfullySent = true;
                 model.Result = await _localizationService.GetResourceAsync("ContactUs.YourEnquiryHasBeenSent");
@@ -269,7 +267,7 @@ namespace Nop.Web.Controllers
                 var body = _htmlFormatter.FormatText(model.Enquiry, false, true, false, false, false, false);
 
                 await _workflowMessageService.SendContactVendorMessageAsync(vendor, (await _workContext.GetWorkingLanguageAsync()).Id,
-                    model.Email.Trim(), model.FullName, subject, body);
+                    model.Email, model.FullName, subject, body);
 
                 model.SuccessfullySent = true;
                 model.Result = await _localizationService.GetResourceAsync("ContactVendor.YourEnquiryHasBeenSent");
@@ -293,17 +291,25 @@ namespace Nop.Web.Controllers
 
         //SEO sitemap page
         //available even when a store is closed
-        [CheckAccessClosedStore(true)]
+        [CheckAccessClosedStore(ignore: true)]
         //available even when navigation is not allowed
-        [CheckAccessPublicStore(true)]
+        [CheckAccessPublicStore(ignore: true)]
         //ignore SEO friendly URLs checks
-        [CheckLanguageSeoCode(true)]
+        [CheckLanguageSeoCode(ignore: true)]
         public virtual async Task<IActionResult> SitemapXml(int? id)
         {
-            var sitemapModel = _sitemapXmlSettings.SitemapXmlEnabled
-                ? await _sitemapModelFactory.PrepareSitemapXmlModelAsync(id) : null;
+            if (!_sitemapXmlSettings.SitemapXmlEnabled)
+                return StatusCode(StatusCodes.Status403Forbidden);
 
-            return Content(sitemapModel?.SitemapXml, "text/xml");
+            try
+            {
+                var sitemapXmlModel = await _sitemapModelFactory.PrepareSitemapXmlModelAsync(id ?? 0);
+                return PhysicalFile(sitemapXmlModel.SitemapXmlPath, MimeTypes.ApplicationXml);
+            }
+            catch
+            {
+                return StatusCode(StatusCodes.Status503ServiceUnavailable);
+            }
         }
 
         public virtual async Task<IActionResult> SetStoreTheme(string themeName, string returnUrl = "")
@@ -323,9 +329,9 @@ namespace Nop.Web.Controllers
 
         [HttpPost]
         //available even when a store is closed
-        [CheckAccessClosedStore(true)]
+        [CheckAccessClosedStore(ignore: true)]
         //available even when navigation is not allowed
-        [CheckAccessPublicStore(true)]
+        [CheckAccessPublicStore(ignore: true)]
         public virtual async Task<IActionResult> EuCookieLawAccept()
         {
             if (!_storeInformationSettings.DisplayEuCookieLawWarning)
@@ -340,11 +346,11 @@ namespace Nop.Web.Controllers
 
         //robots.txt file
         //available even when a store is closed
-        [CheckAccessClosedStore(true)]
+        [CheckAccessClosedStore(ignore: true)]
         //available even when navigation is not allowed
-        [CheckAccessPublicStore(true)]
+        [CheckAccessPublicStore(ignore: true)]
         //ignore SEO friendly URLs checks
-        [CheckLanguageSeoCode(true)]
+        [CheckLanguageSeoCode(ignore: true)]
         public virtual async Task<IActionResult> RobotsTextFile()
         {
             var robotsFileContent = await _commonModelFactory.PrepareRobotsTextFileAsync();
@@ -352,6 +358,10 @@ namespace Nop.Web.Controllers
             return Content(robotsFileContent, MimeTypes.TextPlain);
         }
 
+        //available even when a store is closed
+        [CheckAccessClosedStore(ignore: true)]
+        //available even when navigation is not allowed
+        [CheckAccessPublicStore(ignore: true)]
         public virtual IActionResult GenericUrl()
         {
             //seems that no entity was found
@@ -360,7 +370,7 @@ namespace Nop.Web.Controllers
 
         //store is closed
         //available even when a store is closed
-        [CheckAccessClosedStore(true)]
+        [CheckAccessClosedStore(ignore: true)]
         public virtual IActionResult StoreClosed()
         {
             return View();

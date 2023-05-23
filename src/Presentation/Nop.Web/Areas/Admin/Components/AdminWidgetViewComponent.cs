@@ -1,6 +1,4 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Nop.Web.Areas.Admin.Factories;
 using Nop.Web.Framework.Components;
 
@@ -9,11 +7,11 @@ namespace Nop.Web.Areas.Admin.Components
     /// <summary>
     /// Represents a view component that displays an admin widgets
     /// </summary>
-    public class AdminWidgetViewComponent : NopViewComponent
+    public partial class AdminWidgetViewComponent : NopViewComponent
     {
         #region Fields
 
-        private readonly IWidgetModelFactory _widgetModelFactory;
+        protected readonly IWidgetModelFactory _widgetModelFactory;
 
         #endregion
 

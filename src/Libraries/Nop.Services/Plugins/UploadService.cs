@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
+﻿using System.Globalization;
 using System.IO.Compression;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -19,13 +14,13 @@ namespace Nop.Services.Plugins
     /// <summary>
     /// Represents the implementation of a service for uploading application extensions (plugins or themes) and favicon and app icons
     /// </summary>
-    public class UploadService : IUploadService
+    public partial class UploadService : IUploadService
     {
         #region Fields
 
-        private readonly INopFileProvider _fileProvider;
-        private readonly IStoreContext _storeContext;
-        private readonly IThemeProvider _themeProvider;
+        protected readonly INopFileProvider _fileProvider;
+        protected readonly IStoreContext _storeContext;
+        protected readonly IThemeProvider _themeProvider;
 
         #endregion
 
@@ -499,7 +494,7 @@ namespace Nop.Services.Plugins
         /// <summary>
         /// Represents uploaded item (plugin or theme) details 
         /// </summary>
-        public class UploadedItem
+        public partial class UploadedItem
         {
             /// <summary>
             /// Gets or sets the type of an uploaded item

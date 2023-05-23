@@ -5,7 +5,7 @@ namespace Nop.Core.Domain.Security
     /// <summary>
     /// CAPTCHA settings
     /// </summary>
-    public class CaptchaSettings : ISettings
+    public partial class CaptchaSettings : ISettings
     {
         /// <summary>
         /// Is CAPTCHA enabled?
@@ -51,6 +51,11 @@ namespace Nop.Core.Domain.Security
         /// A value indicating whether CAPTCHA should be displayed on the "comment news" page
         /// </summary>
         public bool ShowOnNewsCommentPage { get; set; }
+
+        /// <summary>
+        /// A value indicating whether CAPTCHA should be displayed on the "News letter" page
+        /// </summary>
+        public bool ShowOnNewsletterPage { get; set; }        
 
         /// <summary>
         /// A value indicating whether CAPTCHA should be displayed on the product reviews page

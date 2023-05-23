@@ -1,6 +1,4 @@
-﻿using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
+﻿using System.Security.Claims;
 using Nop.Services.Authentication.External;
 using Nop.Services.Customers;
 using Nop.Services.Events;
@@ -10,11 +8,11 @@ namespace Nop.Plugin.ExternalAuth.Facebook.Infrastructure
     /// <summary>
     /// Facebook authentication event consumer (used for saving customer fields on registration)
     /// </summary>
-    public partial class FacebookAuthenticationEventConsumer : IConsumer<CustomerAutoRegisteredByExternalMethodEvent>
+    public class FacebookAuthenticationEventConsumer : IConsumer<CustomerAutoRegisteredByExternalMethodEvent>
     {
         #region Fields
 
-        private readonly ICustomerService _customerService;
+        protected readonly ICustomerService _customerService;
 
         #endregion
 

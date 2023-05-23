@@ -1,16 +1,14 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Nop.Services.Customers;
 using Nop.Web.Factories;
 using Nop.Web.Framework.Components;
 
 namespace Nop.Web.Components
 {
-    public class ProfileInfoViewComponent : NopViewComponent
+    public partial class ProfileInfoViewComponent : NopViewComponent
     {
-        private readonly ICustomerService _customerService;
-        private readonly IProfileModelFactory _profileModelFactory;
+        protected readonly ICustomerService _customerService;
+        protected readonly IProfileModelFactory _profileModelFactory;
 
         public ProfileInfoViewComponent(ICustomerService customerService, IProfileModelFactory profileModelFactory)
         {

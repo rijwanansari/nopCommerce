@@ -1,15 +1,14 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Nop.Services.Forums;
 using Nop.Web.Factories;
 using Nop.Web.Framework.Components;
 
 namespace Nop.Web.Components
 {
-    public class ForumLastPostViewComponent : NopViewComponent
+    public partial class ForumLastPostViewComponent : NopViewComponent
     {
-        private readonly IForumModelFactory _forumModelFactory;
-        private readonly IForumService _forumService;
+        protected readonly IForumModelFactory _forumModelFactory;
+        protected readonly IForumService _forumService;
 
         public ForumLastPostViewComponent(IForumModelFactory forumModelFactory, IForumService forumService)
         {

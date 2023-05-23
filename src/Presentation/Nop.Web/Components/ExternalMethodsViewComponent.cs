@@ -1,15 +1,14 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Nop.Web.Factories;
 using Nop.Web.Framework.Components;
 
 namespace Nop.Web.Components
 {
-    public class ExternalMethodsViewComponent : NopViewComponent
+    public partial class ExternalMethodsViewComponent : NopViewComponent
     {
         #region Fields
 
-        private readonly IExternalAuthenticationModelFactory _externalAuthenticationModelFactory;
+        protected readonly IExternalAuthenticationModelFactory _externalAuthenticationModelFactory;
 
         #endregion
 
